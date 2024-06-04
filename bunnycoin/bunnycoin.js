@@ -1,12 +1,5 @@
 const axios = require("axios");
-
-let accounts = [
-  {
-    index: 0,
-    cookie: "",
-    coins: "lv",
-  },
-];
+const { accounts } = require("./config");
 
 async function callApi(account) {
   let data = JSON.stringify({
