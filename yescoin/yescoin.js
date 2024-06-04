@@ -1,7 +1,6 @@
 const axios = require("axios");
-const { getDateTimeLocal } = require("./common");
-const { accountConfig } = require("./account-config");
-let accounts = accountConfig.ACC_YESCOIN;
+const { getDateTimeLocal } = require("../common");
+const { accounts } = require("./config");
 
 async function callApiClaim(account) {
   let data = JSON.stringify(1500);
