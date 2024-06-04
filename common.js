@@ -12,10 +12,9 @@ async function countdown(seconds) {
   console.log("Countdown complete!");
 }
 
-async function getDateTimeLocal() {
-  var d = new Date();    
-  d = new Date(d.getTime() - d.getTimezoneOffset() * 60000);
-  return d;
+function getDateTimeLocal() {
+  var d = new Date().toLocaleString();
+  return `\x1b[36m ` + d + ` \x1b[0m`;
 }
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
