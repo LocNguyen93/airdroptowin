@@ -146,9 +146,9 @@ async function extractChq(chq) {
   return eval(codeToExecute);
 }
 
-async function callApiApplyBoost(account) {
+async function callApiApplyBoost(account, type) {
   let data = JSON.stringify({
-    "type": "energy"
+    "type": `${type}`
   });
 
   let config = {
@@ -193,14 +193,37 @@ async function run() {
 
     let isRun = true;
     let isApplyBoot = true;
+    let isApplyBootTurbo = true;
     while (isRun) {
-      const randomNum = getRandomInt(10, 15);
+      if (isApplyBootTurbo) {
+        console.log("Start Turbo");
+        let count = 0;
+        const applyBootRes = await callApiApplyBoost(account, "turbo");
+        if (applyBootRes?.statusCode === 400 || applyBootRes?.statusCode === 401) {
+          isApplyBootTurbo = false;
+          console.log("End Turbo ", applyBootRes?.statusCode);
+        } else {
+          while (count <= 20) {
+            let dataGetPoint = JSON.stringify({
+              taps: getRandomInt(400, 500),
+              time: new Date().getTime(),
+            });
+            const response1 = await callApi(pathApi.getPoint, dataGetPoint, account, timestamp);
+            if (response1?.statusCode === 201 || response1?.statusCode === 200) {
+              const data = response1;
+              console.log("Turbo count", count);
+            }
+            count++;
+          }
+        }
+      }
+
       const timestamp = new Date().getTime();
       let dataGetPoint = JSON.stringify({
-        taps: randomNum,
+        taps: getRandomInt(10, 15),
         time: timestamp,
       });
-
+      
       const response = await callApi(pathApi.getPoint, dataGetPoint, account, timestamp);
       if (response?.statusCode === 201 || response?.statusCode === 200) {
         const data = response;
@@ -212,12 +235,12 @@ async function run() {
         if (energy < 100) {
           //isRun = false;
           if (isApplyBoot) {
-            const applyBootRes = await callApiApplyBoost(account);
+            const applyBootRes = await callApiApplyBoost(account, "energy");
             if (applyBootRes?.statusCode === 400) {
               isApplyBoot = false;
               isRun = false;
             }
-            console.log("applyBootRes", applyBootRes?.statusCode);
+            console.log("Energy", applyBootRes?.statusCode);
           }
         }
       } else if (response?.statusCode === 401 || response?.statusCode === 400) {
@@ -229,7 +252,6 @@ async function run() {
         const responseLoginFirst = await callApiLogin(pathApi.login, dataLoginFirst);
 
         if (responseLoginFirst?.statusCode === 201 || responseLoginFirst?.statusCode === 200) {
-
           const access_token = responseLoginFirst["access_token"];
           account.authorization = access_token;
           accounts[index].authorization = access_token;          
