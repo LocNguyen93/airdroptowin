@@ -1,5 +1,5 @@
 const axios = require("axios");
-const { handleError } = require("./common");
+//const { handleError } = require("./common");
 const { accounts } = require("./config");
 
 const pathApi = {
@@ -95,7 +95,7 @@ async function run(isRunReFarming = true) {
           if (responseClaimTaps?.statusCode === 201 || responseClaimTaps?.statusCode === 200) {
             console.log(`CEX-${index} claimTaps successfully!`);
           } else {
-            handleError(`CEX-${index} claimTaps(${responseClaimTaps?.statusCode})`, responseClaimTaps);
+            //handleError(`CEX-${index} claimTaps(${responseClaimTaps?.statusCode})`, responseClaimTaps);
           }
         }
 
@@ -115,14 +115,14 @@ async function run(isRunReFarming = true) {
             if (responseClaimFromChildren?.statusCode === 201 || responseClaimFromChildren?.statusCode === 200) {
               console.log(`CEX-${index} claimFromChildren successfully!`);
             } else {
-              handleError(
-                `CEX-${index} claimFromChildren(${responseClaimFromChildren?.statusCode})`,
-                responseClaimFromChildren,
-              );
+              // handleError(
+              //   `CEX-${index} claimFromChildren(${responseClaimFromChildren?.statusCode})`,
+              //   responseClaimFromChildren,
+              // );
             }
           }
         } else {
-          handleError(`CEX-${index} getChildren(${responseGetChildren?.statusCode})`, responseGetChildren);
+         // handleError(`CEX-${index} getChildren(${responseGetChildren?.statusCode})`, responseGetChildren);
         }
 
         // Farm
@@ -142,10 +142,10 @@ async function run(isRunReFarming = true) {
                   await reFarming();
                 }, nextTimeFarming);
               } else {
-                handleError(`CEX-${index} startFarm(${responseStartFarm?.statusCode})`, responseStartFarm);
+                //handleError(`CEX-${index} startFarm(${responseStartFarm?.statusCode})`, responseStartFarm);
               }
             } else {
-              handleError(`CEX-${index} claimFarm(${responseClaimFarm?.statusCode})`, responseClaimFarm);
+              //handleError(`CEX-${index} claimFarm(${responseClaimFarm?.statusCode})`, responseClaimFarm);
             }
           }
 
@@ -154,11 +154,11 @@ async function run(isRunReFarming = true) {
           }, timeout);
         }
       } else {
-        handleError(`CEX-${index} getUserInfo(${response?.statusCode})`, response);
+        //handleError(`CEX-${index} getUserInfo(${response?.statusCode})`, response);
         isNextRun = false;
       }
     } else {
-      handleError(`CEX-${index} getUserInfo(${response?.statusCode})`, response);
+      //handleError(`CEX-${index} getUserInfo(${response?.statusCode})`, response);
       isNextRun = false;
     }
   }

@@ -6,7 +6,7 @@ async function callApi(account) {
   let data = JSON.stringify({
     "count": 1000,
     "availableTaps": 7996,
-    "timestamp": 1717079078
+    "timestamp": 1717691825
   });
   
   let config = {

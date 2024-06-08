@@ -139,11 +139,6 @@ async function run() {
         const claimRes = await callApiClaim(account);
         if (claimRes?.statusCode === 201 || claimRes?.statusCode === 200) {
           console.log(claimRes);
-          if (claimRes?.error !== null) {
-            console.log("Error: The time to harvest has not yet come");
-          } else {
-            console.log("Claim success amount", claimRes);
-          }
           isRun = false;
         } else {
           console.log("Claim fail", claimRes);
