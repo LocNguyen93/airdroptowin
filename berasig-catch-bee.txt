@@ -1,0 +1,29 @@
+var mdown = new MouseEvent('pointerdown', { view: null, bubbles: true, cancelable: true});
+var autoclick = function() {
+    var clickableArea = document.getElementsByClassName('take-bee-fly');
+    if (clickableArea) {
+        clickableArea[0]?.dispatchEvent(mdown);
+        clickableArea[0]?.click();
+    }
+}
+
+var claimBee = function () {
+    const element = document.querySelector('.btn.p-5.w-full');
+    if (element) {
+        element.dispatchEvent(mdown);
+        element.click();
+    }
+}
+
+function start(){
+    if (window.click) clearInterval(window.click);
+    if (window.claimBee) clearInterval(window.claimBee);
+    window.click = setInterval(autoclick, 1000);
+    window.claimBee = setInterval(claimBee, 2000);
+}
+
+function stop(){
+    if(window.click) clearInterval(window.click);
+    if(window.claimBee) clearInterval(window.claimBee);
+}
+start();
