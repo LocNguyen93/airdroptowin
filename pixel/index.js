@@ -7,21 +7,24 @@ async function callApiClaim(account) {
     method: 'post',
     maxBodyLength: Infinity,
     url: 'https://api-clicker.pixelverse.xyz/api/mining/claim',
-    headers: { 
-      'accept': 'application/json, text/plain, */*', 
-      'accept-language': 'vi-VN,vi;q=0.9,fr-FR;q=0.8,fr;q=0.7,en-US;q=0.6,en;q=0.5', 
-      'content-length': '0', 
-      'initdata': `${account?.initData}`, 
-      'origin': 'https://sexyzbot.pxlvrs.io', 
-      'priority': 'u=1, i', 
-      'referer': 'https://sexyzbot.pxlvrs.io/', 
-      'sec-fetch-dest': 'empty', 
-      'sec-fetch-mode': 'cors', 
-      'sec-fetch-site': 'cross-site', 
+    headers: {
+      'accept': 'application/json, text/plain, */*',
+      'accept-language': 'vi-VN,vi;q=0.9,fr-FR;q=0.8,fr;q=0.7,en-US;q=0.6,en;q=0.5',
+      'content-length': '0',
+      'initdata': `${account?.initData}`,
+      'origin': 'https://sexyzbot.pxlvrs.io',
+      'priority': 'u=1, i',
+      'referer': 'https://sexyzbot.pxlvrs.io/',
+      'sec-ch-ua': '"Google Chrome";v="125", "Chromium";v="125", "Not.A/Brand";v="24"',
+      'sec-ch-ua-mobile': '?0',
+      'sec-ch-ua-platform': '"Windows"',
+      'sec-fetch-dest': 'empty',
+      'sec-fetch-mode': 'cors',
+      'sec-fetch-site': 'cross-site',
       'secret': `${account?.secret}`,
       'tg-id': `${account?.tgId}`,
-      'user-agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1', 
-      'username': `${account?.username}`
+      'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
+      'username': `${account?.username}`,
     }
   };
 
