@@ -1,7 +1,6 @@
 const axios = require("axios");
 const { getRandomInt } = require("../common");
-const jsdom = require("jsdom");
-const { JSDOM } = jsdom;
+const puppeteer = require("puppeteer");
 const { accounts } = require("./config");
 
 function calculateContentId(accountId, timestamp) {
@@ -12,6 +11,8 @@ const pathApi = {
   login: "account/login",
   getPoint: "player/submit_taps",
 };
+
+const xcv = "627";
 
 async function callApi(pathApi, data, account, timestamp) {
   const contentId = calculateContentId(account.accountId, timestamp);
@@ -39,7 +40,7 @@ async function callApi(pathApi, data, account, timestamp) {
       "sec-ch-ua-platform": '"Android"',
       "x-app": "tapswap_server",
       "x-bot": "no",
-      "x-cv": "621",
+      "x-cv": `${xcv}`,
     },
     data: data,
   };
@@ -78,7 +79,7 @@ async function callApiLogin(pathApi, data) {
       "sec-ch-ua-platform": '"Android"',
       "x-app": "tapswap_server",
       "x-bot": "no",
-      "x-cv": "621",
+      "x-cv": `${xcv}`,
     },
     data: data,
   };
@@ -97,53 +98,43 @@ async function callApiLogin(pathApi, data) {
 
 async function extractChq(chq) {
   // const chq =
-  //   "fbe8f3fee9f4f2f3bdffb5feb1f9b4e6ebfcefbdf8a0fcb5b4a6eff8e9e8eff3bdffa0fbe8f3fee9f4f2f3b5fbb1fab4e6fba0fbb0ade5fea5a6ebfcefbdf5a0f8c6fbc0a6eff8e9e8eff3bdf5a6e0b1ffb5feb1f9b4a6e0b5fbe8f3fee9f4f2f3b5feb1f9b4e6ebfcefbdf1a0ffb1f8a0feb5b4a6eaf5f4f1f8b5bcbcc6c0b4e6e9efe4e6ebfcefbdfba0edfcefeef8d4f3e9b5f1b5ade5fea5b4b4b2ade5acb6edfcefeef8d4f3e9b5f1b5ade5fea4b4b4b2ade5afb7b5edfcefeef8d4f3e9b5f1b5ade5fefcb4b4b2ade5aeb4b6b0edfcefeef8d4f3e9b5f1b5ade5feffb4b4b2ade5a9b7b5edfcefeef8d4f3e9b5f1b5ade5fefeb4b4b2ade5a8b4b6b0edfcefeef8d4f3e9b5f1b5ade5fef9b4b4b2ade5abb7b5b0edfcefeef8d4f3e9b5f1b5ade5fef8b4b4b2ade5aab4b6b0edfcefeef8d4f3e9b5f1b5ade5fefbb4b4b2ade5a5b7b5edfcefeef8d4f3e9b5f1b5ade5f9adb4b4b2ade5a4b4b6b0edfcefeef8d4f3e9b5f1b5ade5f9acb4b4b2ade5fcb6edfcefeef8d4f3e9b5f1b5ade5f9afb4b4b2ade5ffa6f4fbb5fba0a0a0f9b4ffeff8fcf6a6f8f1eef8bdf8c6baede8eef5bac0b5f8c6baeef5f4fbe9bac0b5b4b4a6e0fefce9fef5b5fab4e6f8c6baede8eef5bac0b5f8c6baeef5f4fbe9bac0b5b4b4a6e0e0e0b5fcb1ade5a8ada9ffadb4b1b5fbe8f3fee9f4f2f3b5b4e6e9efe4e6f8ebfcf1b5baf9f2fee8f0f8f3e9c6c1bafaf8e9d8f1f8f0f8f3e9dfe4d4f9c1bac0a6bab4a6e0fefce9fef5e6eff8e9e8eff3bdade5feadfbf8fffcfff8a6e0ebfcefbdfea0f9f2fee8f0f8f3e9b1f8a0bafaf8e9d8f1f8f0f8f3e9dfe4d4f9bab1fba0bafaf8e9dce9e9eff4ffe8e9f8bab1f5a0fec6f8c0b5bac2fef5efc2bab4a6f5c6baf4f3f3f8efd5c9d0d1bac0a0baa1f9f4eba3a1f9f4ebc1e5afadf4f9a0c1e5afafc2f4c9c2adc1e5afafbab6bac1e5afadc2eba0c1e5afafa8aea9a4adc1e5afafa3a1f9f4ebc1e5afadf4f9a0bab6bac1e5afafc2ccffc2acc1e5afafc1e5afadc2eba0c1e5afafaaadacaca4c1e5afafa3a1bab6baf9f4ebc1e5afadf4f9a0c1e5afafc2e7e5c2afc1e5afafc1e5afadc2eba0c1e5afafa9bab6baaaadaba8c1e5afafa3a1f9f4ebc1e5afadf4f9a0c1e5afafc2fffbc2aebab6bac1e5afafc1e5afadc2eba0c1e5afafa4aeabaaa5c1e5afafa3a1f9f4ebc1e5afadf4f9bab6baa0c1e5afafc2c8e4c2a9c1e5afafc1e5afadc2eba0c1e5afafa5afa9afa4c1e5afafa3bab6baa1b2f9f4eba3a1b2f9f4eba3a1b2f9f4eba3a1b2bab6baf9f4eba3a1b2f9f4eba3a1b2f9f4eba3baa6ebfcefbdf4a0fec6f8c0b5bac2e7e5c2afbab4c6fbc0b5bac2ebbab4b1f7a0fec6f8c0b5bac2f4c9c2adbab4c6fbc0b5bac2ebbab4b1f6a0b6f4a6eff8e9e8eff3bdf6b7a0f6b1f6b7a0b6f7b1f6b8a0ade5a4acf8fbfbb1f6a6e0b5b4b4b4a6fbe8f3fee9f4f2f3bdfcb5b4e6ebfcefbdf0a0c6baacada4ada9a8d5d5d2f3f7fabab1baa5a9ffecc4f6c4f0bab1baaea9aba5aef4cbecd9f0f8bab1baa4affac4cbdffbe5bab1baaaa4abaca8efc9c4fff2c8bab1baaeafa5a4aeafcef2dcdec7eebab1baafacc7fbf3d4eec5bab1baafa4abd5fbd7ccf8f9bab1baaca8afa8a4a8cbcbd9c9f4cdbab1baa9a9afada9adadcfcfc7f1fbf3bab1baacacada8a4a8afacd9f1e7edc9fbbac0a6fca0fbe8f3fee9f4f2f3b5b4e6eff8e9e8eff3bdf0a6e0a6eff8e9e8eff3bdfcb5b4a6e0";
-  const len = chq.length,
-    bytes = new Uint8Array(len / 2),
-    x = 157;
-  for (let R = 0; R < len; R += 2) bytes[R / 2] = parseInt(chq.substring(R, R + 2), 16);
-  const xored = bytes.map((R) => R ^ x),
-    decoded = new TextDecoder().decode(xored);
-
-  const htmlMatch = decoded.match(/innerHTML.+?=(.+?);/is);
-  if (!htmlMatch) {
-    console.log("err htmlMatch");
+  //   "b5fbe8f3fee9f4f2f3b5feb1f9b4e6ebfcefbdf2a0ffb1f8a0feb5b4a6eaf5f4f1f8b5bcbcc6c0b4e6e9efe4e6ebfcefbdfba0b0edfcefeef8d4f3e9b5f2b5ade5f9f9b4b4b2ade5acb7b5edfcefeef8d4f3e9b5f2b5ade5f9f8b4b4b2ade5afb4b6b0edfcefeef8d4f3e9b5f2b5ade5f9fbb4b4b2ade5aeb6edfcefeef8d4f3e9b5f2b5ade5f8adb4b4b2ade5a9b7b5b0edfcefeef8d4f3e9b5f2b5ade5f8acb4b4b2ade5a8b4b6b0edfcefeef8d4f3e9b5f2b5ade5f8afb4b4b2ade5abb6edfcefeef8d4f3e9b5f2b5ade5f8aeb4b4b2ade5aab7b5edfcefeef8d4f3e9b5f2b5ade5f8a9b4b4b2ade5a5b4b6b0edfcefeef8d4f3e9b5f2b5ade5f8a8b4b4b2ade5a4b6edfcefeef8d4f3e9b5f2b5ade5f8abb4b4b2ade5fcb7b5edfcefeef8d4f3e9b5f2b5ade5f8aab4b4b2ade5ffb4a6f4fbb5fba0a0a0f9b4ffeff8fcf6a6f8f1eef8bdf8c6baede8eef5bac0b5f8c6baeef5f4fbe9bac0b5b4b4a6e0fefce9fef5b5fab4e6f8c6baede8eef5bac0b5f8c6baeef5f4fbe9bac0b5b4b4a6e0e0e0b5fcb1ade5a4aaffafa8b4b1b5fbe8f3fee9f4f2f3b5b4e6ebfcefbdf8a0e6e0a6f8c6baf6eeeee4d5bac0a0bafaf8e9d8f1f8f0f8f3e9dfe4d4f9bab1f8c6baedd6eff1febac0a0bafaf8e9dce9e9eff4ffe8e9f8bab1f8c6baf3d2d6f1c5bac0a0bac2fef5efc2bab1f8c6bad9cbcbf8d4bac0a0baf4f3f3f8efd5c9d0d1bab1f8c6baeefbd7c5ffbac0a0baa1f9f4eba3a1f9f4ebc1e5afadf4f9a0c1e5afafc2d7acc2adc1e5afafbab6bac1e5afadc2eba0c1e5afafa8a4a4aca9c1e5afafa3a1f9f4ebc1e5afadf4f9a0bab6bac1e5afafc2d5a8c2acc1e5afafc1e5afadc2eba0c1e5afafa8aba9adacc1e5afafa3a1bab6baf9f4ebc1e5afadf4f9a0c1e5afafc2f4f6c2afc1e5afafc1e5afadc2eba0c1e5afafafbab6baa8aea8afc1e5afafa3a1f9f4ebc1e5afadf4f9a0c1e5afafc2d2f4c2aebab6bac1e5afafc1e5afadc2eba0c1e5afafa9a8afaba4c1e5afafa3a1f9f4ebc1e5afadf4f9bab6baa0c1e5afafc2fad2c2a9c1e5afafc1e5afadc2eba0c1e5afafa9a9afaaabc1e5afafa3bab6baa1b2f9f4eba3a1b2f9f4eba3a1b2f9f4eba3a1b2bab6baf9f4eba3a1b2f9f4eba3a1b2f9f4eba3bab1f8c6bacdccc7f0d0bac0a0bac2f4f6c2afbaa6ebfcefbdfba0f8a6e9efe4e6f8ebfcf1b5baf9f2fee8f0f8f3e9c6c1bafaf8e9d8f1f8f0f8f3e9dfe4d4f9c1bac0a6bab4a6e0fefce9fef5e6eff8e9e8eff3bdade5feadfbf8fffcfff8a6e0ebfcefbdf5a0f9f2fee8f0f8f3e9b1f4a0fbc6baf6eeeee4d5bac0b1f7a0fbc6baedd6eff1febac0b1f6a0f5c6f4c0b5fbc6baf3d2d6f1c5bac0b4a6f6c6fbc6bad9cbcbf8d4bac0c0a0fbc6baeefbd7c5ffbac0a6ebfcefbdf1a0f5c6f4c0b5fbc6bacdccc7f0d0bac0b4c6f7c0b5bac2ebbab4b1f0a0f5c6f4c0b5bac2d5a8c2acbab4c6f7c0b5bac2ebbab4b1f3a0b6f1a6eff8e9e8eff3bdf3b7a0f3b1f3b7a0b6f0b1f3b8a0ade5aeaaf9fea4b1f3a6e0b5b4b4b4a6fbe8f3fee9f4f2f3bdffb5feb1f9b4e6ebfcefbdf8a0fcb5b4a6eff8e9e8eff3bdffa0fbe8f3fee9f4f2f3b5fbb1fab4e6fba0fbb0ade5f9f9a6ebfcefbdf5a0f8c6fbc0a6eff8e9e8eff3bdf5a6e0b1ffb5feb1f9b4a6e0fbe8f3fee9f4f2f3bdfcb5b4e6ebfcefbdeda0c6baaff5f8c9f3fafcbab1baafaaabababa8aad6d7f6cafbe8bab1baa9f6d8edcfd1ccbab1baa9ababaeaca8cfdff8e4ecd4bab1baaea4a5a4a5a5adfaeeede9ced0bab1baacafadafa4a8d5d8c7dee9f4bab1baa8afa5ebd7d7e5fce8bab1baa5a9adaba9a9acd7fac9ceccdabab1baaaadd9f1cedcd5cbbab1baaeaea8acafafaaebcbcffcf8d0bab1baaeada4a9a4e4ead8d0d5f8bac0a6fca0fbe8f3fee9f4f2f3b5b4e6eff8e9e8eff3bdeda6e0a6eff8e9e8eff3bdfcb5b4a6e0";
+  let browser;
+  let page;
+  const xorKey = 157;
+  if (!browser) {
+    browser = await puppeteer.launch();
+    page = await browser.newPage();
   }
 
-  let html = htmlMatch[1].trim().replace(/'\+'/g, "");
+  const chqLength = chq.length;
 
-  html = eval(html);
-  const dom = new JSDOM(html);
+  let bytesArray = new Uint8Array(chqLength / 2);
 
-  const divElements = dom.window.document.querySelectorAll("div");
-  const codes = {};
+  for (let i = 0; i < chqLength; i += 2) {
+    bytesArray[i / 2] = parseInt(chq.substring(i, i + 2), 16);
+  }
 
-  divElements.forEach((div) => {
-    if (div.hasAttribute("id") && div.hasAttribute("_v")) {
-      codes[div.getAttribute("id")] = div.getAttribute("_v");
-    }
+  let xorBytes = bytesArray.map((b) => b ^ xorKey);
+  let decodedXor = Buffer.from(xorBytes).toString("utf8");
+
+  await page.evaluate(() => {
+    var chrStub = document.createElement("div");
+    chrStub.id = "_chr_";
+    document.body.appendChild(chrStub);
   });
-  console.log(codes);
 
-  const vaMatch = decoded.match(/var\s*i\s*=\s*.+?\(["'](\w+)["']\).+?,/is);
-  const vbMatch = decoded.match(/,\s*j\s*=\s*.+?\(["'](\w+)["']\).+?,/is);
-  const rMatch = decoded.match(/k\s*%=\s*(\w+)/is);
+  let fixedXor = decodedXor.replace(/`/g, "\\`");
 
-  if (!vaMatch || !vbMatch || !rMatch) {
-    console.log("Error matchh");
-  }
-
-  const va = vaMatch[1];
-  const vb = vbMatch[1];
-  const r = parseInt(rMatch[1], 16);
-
-  const i = parseInt(codes[va]);
-  const j = parseInt(codes[vb]);
-  let k = i;
-
-  k *= k;
-  k *= j;
-  k %= r;
+  let k = await page.evaluate((fixedXor) => {
+    try {
+      console.log(eval(fixedXor));
+      return eval(fixedXor);
+    } catch (e) {
+      return e.toString();
+    }
+  }, fixedXor);
+  console.log(k); // 176310
 
   return k;
 }
