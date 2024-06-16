@@ -274,21 +274,26 @@ async function callApiCollectDuck(account, nestId) {
   return result;
 }
 
-
-const collectType = [2594116, 2594117, 2594118, 2626288]
+const rare = [4, 5, 6, 7, 8, 9, 10]
 
 async function LeyEggAndRemoveAndHactAndCollectDuck(account, nestId, duckId ) {
   const layEggRes = await callApiLayEgg(account, nestId, duckId);
   if (layEggRes?.statusCode === 201 || layEggRes?.statusCode === 200) {
     console.log("Lay egg", nestId, duckId, layEggRes?.data?.name);
-    if (layEggRes?.data?.name === "egg_3" || layEggRes?.data?.name === "egg_4" || layEggRes?.data?.name === "egg_5" || layEggRes?.data?.name === "egg_6" || layEggRes?.data?.name === "egg_7") {
-      console.log("Egg", layEggRes?.data?.name);
-      const removeRes = await callApiRemoveDuck(account, duckId);
-      console.log("Remove duck", duckId);
-      if (removeRes?.statusCode === 201 || removeRes?.statusCode === 200) {
-        await callApiHatchDuck(account, nestId);
-        await callApiCollectDuck(account, nestId);
-        console.log("Hatch and collect duck");
+
+    let numbers = layEggRes?.data?.name.match(/\d/g).map(Number);
+    console.log(numbers[0]); // Output: [4]
+
+    for (const index of rare) {
+      if (numbers[0] === index) {
+        console.log("Egg", layEggRes?.data?.name);
+        const removeRes = await callApiRemoveDuck(account, duckId);
+        console.log("Remove duck", duckId);
+        if (removeRes?.statusCode === 201 || removeRes?.statusCode === 200) {
+          await callApiHatchDuck(account, nestId);
+          await callApiCollectDuck(account, nestId);
+          console.log("Hatch and collect duck");
+        }
       }
     }
   }
@@ -297,25 +302,32 @@ async function LeyEggAndRemoveAndHactAndCollectDuck(account, nestId, duckId ) {
 async function run() {
   for (let index = 0; index < accounts.length; index++) {
     let account = accounts[index];
+    const collectType = accounts[index]?.collectType;
     console.log("start account --> ", index);
     let countCollect = 1;
 
     for (let index2 = 0; index2 < collectType.length; index2++) {
       await sleep(2000);
-      const reloadRes = await callApiReload(account);
 
+      const reloadRes = await callApiReload(account);
       if (reloadRes?.statusCode === 201 || reloadRes?.statusCode === 200) {
         const data = reloadRes?.data?.nest;
-        const listDuck = reloadRes?.data?.duck;
-        const randomNum = getRandomInt(0, 16); //Change duck
+        let listDuck = reloadRes?.data?.duck;
        
+        listDuck.sort(function (a, b) {
+          return b.total_rare - a.total_rare;
+        });
+
+        const randomNum = getRandomInt(0, 14); //Change duck
         const duckId = listDuck[randomNum]?.id;
         const nestId = data[index2].id;
+        const type = collectType[index2];
 
-        console.log("Egg nest:", nestId, " Status:", data[index2].status === 1 ? "Not egg" : "Had egg");
-        if (nestId === collectType[index2]) {
-          if (data[index2].status == 2) {
-            const collecttRes = await callApiCollect(account, collectType[index2]);
+        console.log("Egg nest:", nestId, type, " Status:", data[index2].status === 1 ? "Not egg" : "Had egg");
+        if (nestId === type) {
+          if (data[index2].status === 2) {
+            const collecttRes = await callApiCollect(account, nestId);
+            await sleep(1000);
             if (collecttRes?.statusCode === 201 || collecttRes?.statusCode === 200) {
               console.log("Collect nest: ", nestId);
               await LeyEggAndRemoveAndHactAndCollectDuck(account, nestId, duckId);
@@ -326,7 +338,7 @@ async function run() {
             await LeyEggAndRemoveAndHactAndCollectDuck(account, nestId, duckId);
           }
         } else {
-          console.log("Collect fail nest: ", nestId, collectType[index2]);
+          console.log("Collect fail nest: ", nestId, nestId);
         }
       } else {
         console.log("Reload fail", reloadRes);
@@ -343,7 +355,7 @@ async function run() {
   console.log("DONE AT ", getDateTimeLocal());
   setTimeout(() => {
     run();
-  }, 50 * 60);
+  }, 60);
 }
 
 function sleep(millis) {
