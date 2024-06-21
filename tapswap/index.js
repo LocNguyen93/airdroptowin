@@ -7,15 +7,38 @@ function calculateContentId(accountId, timestamp) {
   return (accountId * timestamp) % accountId;
 }
 
+const defaultChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+function makeRandomString(length) {
+  let randomString = "";
+  const charsLength = defaultChars.length;
+
+  for (let i = 0; i < length; i++) {
+    randomString += defaultChars.charAt(Math.floor(Math.random() * charsLength));
+  }
+  return randomString;
+}
+
+const decodedCacheId = (jsCode, length = 8) => {
+  const pattern = new RegExp("\\b\\w{" + length + "}\\b", "g");
+  const matches = jsCode.match(pattern);
+  const trashWords = new Set(["function", "continue", "document", "parseInt", "toString"]);
+  const filteredMatches = matches.filter(
+    (match) => match.match(/^\w+$/) && !trashWords.has(match) && !match.startsWith("x22"),
+  );
+  const uniqueFilteredMatches = Array.from(new Set(filteredMatches));
+  return uniqueFilteredMatches.join(" ");
+};
+
 const pathApi = {
   login: "account/login",
   getPoint: "player/submit_taps",
 };
 
-const xcv = "627";
+const xcv = "629";
 
 async function callApi(pathApi, data, account, timestamp) {
   const contentId = calculateContentId(account.accountId, timestamp);
+  const cacheId = account.cacheId;
 
   let config = {
     method: "post",
@@ -25,6 +48,7 @@ async function callApi(pathApi, data, account, timestamp) {
       Accept: "*/*",
       "Accept-Language": "vi-VN,vi;q=0.9,fr-FR;q=0.8,fr;q=0.7,en-US;q=0.6,en;q=0.5",
       Authorization: `Bearer ${account.authorization}`,
+      "Cache-Id": `${cacheId}`,
       Connection: "keep-alive",
       "Content-Id": `${contentId}`,
       "Content-Type": "application/json",
@@ -57,7 +81,7 @@ async function callApi(pathApi, data, account, timestamp) {
   return result;
 }
 
-async function callApiLogin(pathApi, data) {
+async function callApiLogin(pathApi, data, cacheId = makeRandomString(8)) {
   let config = {
     method: "post",
     maxBodyLength: Infinity,
@@ -65,6 +89,7 @@ async function callApiLogin(pathApi, data) {
     headers: {
       Accept: "*/*",
       "Accept-Language": "vi-VN,vi;q=0.9,fr-FR;q=0.8,fr;q=0.7,en-US;q=0.6,en;q=0.5",
+      "Cache-Id": `${cacheId}`,
       Connection: "keep-alive",
       "Content-Type": "application/json",
       Origin: "https://app.tapswap.club",
@@ -126,7 +151,9 @@ async function extractChq(chq) {
 
   let fixedXor = decodedXor.replace(/`/g, "\\`");
 
-  let k = await page.evaluate((fixedXor) => {
+  let cacheId = decodedCacheId(fixedXor);
+
+  let chr = await page.evaluate((fixedXor) => {
     try {
       console.log(eval(fixedXor));
       return eval(fixedXor);
@@ -134,9 +161,10 @@ async function extractChq(chq) {
       return e.toString();
     }
   }, fixedXor);
-  console.log(k); // 176310
 
-  return k;
+  console.log(chr); // 176310
+
+  return { chr, cacheId };
 }
 
 async function callApiApplyBoost(account) {
@@ -227,16 +255,17 @@ async function run() {
           account.authorization = access_token;
           accounts[index].authorization = access_token;
           if (responseLoginFirst.chq) {
-            const chr = await extractChq(responseLoginFirst.chq);
+            const extract_Chq = await extractChq(responseLoginFirst.chq);
             const dataLogin = JSON.stringify({
               init_data: `${account.init_data}`,
               referrer: "",
               bot_key: "app_bot_2",
-              chr: chr,
+              chr: extract_Chq.chr,
             });
-            const responseLogin = await callApiLogin(pathApi.login, dataLogin);
+            const responseLogin = await callApiLogin(pathApi.login, dataLogin, extract_Chq.cacheId);
             const access_token = responseLogin["access_token"];
             account.authorization = access_token;
+            account.cacheId = extractChq.cacheId;
             accounts[index].authorization = access_token;
             // accounts[index].time = responseLogin["player"]["time"] - 1111;
           }
