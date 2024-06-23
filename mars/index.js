@@ -1,6 +1,49 @@
 const axios = require("axios");
 const { getDateTimeLocal } = require("../common");
 const { accounts } = require("./config");
+const puppeteer = require('puppeteer');
+
+async function getDataInit(account, url) {
+  const userProfile = account?.userProfile;
+
+  const browser = await puppeteer.launch({
+    headless: false,
+    userDataDir: userProfile
+  });
+
+  const page = await browser.newPage();
+
+  await page.goto(url);
+  await page.waitForSelector('#column-center > div > div.chat.tabs-tab.can-click-date.active > div.bubbles.has-groups.has-sticky-dates.scrolled-down > div.scrollable.scrollable-y > div.bubbles-inner.has-rights > section > div.bubbles-group.bubbles-group-last > div > div > div.reply-markup > div > button.is-web-view.is-last.reply-markup-button.rp');
+
+  await page.evaluate(() => {
+    const element = document.querySelector('#column-center > div > div.chat.tabs-tab.can-click-date.active > div.bubbles.has-groups.has-sticky-dates.scrolled-down > div.scrollable.scrollable-y > div.bubbles-inner.has-rights > section > div.bubbles-group.bubbles-group-last > div > div > div.reply-markup > div > button.is-web-view.is-last.reply-markup-button.rp');
+    if (element) {
+      element.click(); // Click on the button if found
+    }
+  });
+
+  await page.evaluate(() => {
+    const element = document.querySelector('body > div.popup.popup-peer.popup-confirmation.active > div > div.popup-buttons > button:nth-child(1)');
+    if (element) {
+      element.click(); 
+    }
+  });
+
+  let initData = null;
+  page.on('response', async response => {
+    const request = response.request();
+    const headers = request.headers();
+    if (headers['telegram-init-data']) {
+      initData = headers['telegram-init-data'];
+    }
+  });
+
+  await new Promise(resolve => setTimeout(resolve, 10000));
+  await page.close();
+  await browser.close();
+  return initData;
+};
 
 async function callApiClaim(account) {
   let config = {
@@ -45,10 +88,20 @@ async function run() {
       if (response?.statusCode === 201 || response?.statusCode === 200) {
         console.log("Claim done", response);
         isRun = false;
+      } else if (response?.statusCode === 400) {
+        console.log("Re-login");
+        const url = "https://web.telegram.org/k/#@Mdaowalletbot";
+        console.log("start account --> ", index);
+        const initData = await getDataInit(account, url);
+        account.initData = initData;
+        const response = await callApiClaim(account);
+        console.log("Claim done", response);
+        isRun = false;
       } else if (response?.statusCode === 500) {
         console.log(response?.message);
         isRun = false;
-      } else {
+      }
+      else {
         console.log("Job fail", response);
         isRun = false;
       }
