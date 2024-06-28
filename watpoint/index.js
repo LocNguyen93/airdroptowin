@@ -4,12 +4,12 @@ const { getDateTimeLocal } = require("../common");
 const { accounts } = require("./config");
 
 async function callApiClaim(account) {
-  let data = '{"jsonrpc":"2.0","id":"miningEvent.startSession","method":"miningEvent.startSession","params":{"miningEventId":7}}';
+  let data = `{"jsonrpc":"2.0","id":"user.authentication.loginUsingTelegram","method":"user.authentication.loginUsingTelegram","params":{"initData":"${account?.authorization}"}}`;
 
   let config = {
     method: 'post',
     maxBodyLength: Infinity,
-    url: 'https://api.service.gameeapp.com/',
+    url: 'https://api.gamee.com/',
     headers: {
       'accept': '*/*',
       'accept-language': 'vi-VN,vi;q=0.9,fr-FR;q=0.8,fr;q=0.7,en-US;q=0.6,en;q=0.5',
