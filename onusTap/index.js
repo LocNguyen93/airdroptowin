@@ -4,6 +4,8 @@ const { accounts } = require("./config");
 const pathApi = {
   me: "me",
   claimClick: "claimClick",
+  claimFarm: "claimFarm",
+  startFarm: "startFarm",
 };
 
 async function callApi(pathApi, data) {
@@ -50,7 +52,7 @@ async function run() {
     });
     const response = await callApi(pathApi.me, requestGetInfo);
     if (response?.statusCode === 200) {
-      const { clickNumberLeft } = response;
+      const { clickNumberLeft, isClaimableFarming } = response;
       if (clickNumberLeft > 0) {
         let requestClaimTaps = JSON.stringify({
           initData: account.authData,
@@ -61,6 +63,23 @@ async function run() {
           console.log(`ONUS-${index} claimClick successfully!`);
         } else {
           console.log(`ONUS-${index} Error!`);
+        }
+      }
+      if (isClaimableFarming) {
+        let requestClaimFarm = JSON.stringify({
+          initData: account.authData,
+        });
+        const responseClaimFarm = await callApi(pathApi.claimFarm, requestClaimFarm);
+        if (responseClaimFarm?.statusCode === 201 || responseClaimFarm?.statusCode === 200) {
+          console.log(`ONUS-${index} claimFarm successfully!`);
+          const responseStartFarm = await callApi(pathApi.startFarm, requestClaimFarm);
+          if (responseStartFarm?.statusCode === 201 || responseStartFarm?.statusCode === 200) {
+            console.log(`ONUS-${index} startFarm successfully!`);
+          } else {
+            console.log(`ONUS-${index} startFarm Error!`);
+          }
+        } else {
+          console.log(`ONUS-${index} claimFarm Error!`);
         }
       }
     } else {
