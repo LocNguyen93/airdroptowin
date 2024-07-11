@@ -1,5 +1,5 @@
 const axios = require("axios");
-const { getDateTimeLocal } = require("../common");
+const { getDateTimeLocal, writeFile } = require("../common");
 const { accounts } = require("./config");
 const puppeteer = require('puppeteer');
 
@@ -34,11 +34,11 @@ async function getDataInit(account, url) {
   page.on('response', async response => {
     const request = response.request();
     const headers = request.headers();
+    await new Promise(resolve => setTimeout(resolve, 5000));
     if (headers['telegram-init-data']) {
       initData = headers['telegram-init-data'];
     }
   });
-
   await new Promise(resolve => setTimeout(resolve, 10000));
   await page.close();
   await browser.close();
@@ -82,6 +82,7 @@ async function run() {
     let account = accounts[index];
     console.log("start account --> ", index);
     let isRun = true;
+    let initData = "";
     while (isRun) {
       const response = await callApiClaim(account);
       console.log("callApiClaim", response);
@@ -92,7 +93,7 @@ async function run() {
         console.log("Re-login");
         const url = "https://web.telegram.org/k/#@Mdaowalletbot";
         console.log("start account --> ", index);
-        const initData = await getDataInit(account, url);
+        initData = await getDataInit(account, url);
         account.initData = initData;
         const response = await callApiClaim(account);
         console.log("Claim done", response);
@@ -105,6 +106,10 @@ async function run() {
         console.log("Job fail", response);
         isRun = false;
       }
+    }
+    if (initData !== "" && initData != null) {
+      writeFile("mars", "config.js", index, initData, "initData");
+      await new Promise(resolve => setTimeout(resolve, 5000));
     }
   }
 
