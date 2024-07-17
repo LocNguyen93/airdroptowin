@@ -18,23 +18,12 @@ function makeRandomString(length) {
   return randomString;
 }
 
-const decodedCacheId = (jsCode, length = 8) => {
-  const pattern = new RegExp("\\b\\w{" + length + "}\\b", "g");
-  const matches = jsCode.match(pattern);
-  const trashWords = new Set(["function", "continue", "document", "parseInt", "toString"]);
-  const filteredMatches = matches.filter(
-    (match) => match.match(/^\w+$/) && !trashWords.has(match) && !match.startsWith("x22"),
-  );
-  const uniqueFilteredMatches = Array.from(new Set(filteredMatches));
-  return uniqueFilteredMatches.join(" ");
-};
-
 const pathApi = {
   login: "account/login",
   getPoint: "player/submit_taps",
 };
 
-const xcv = "631";
+const xcv = "632";
 
 async function callApi(pathApi, data, account, timestamp) {
   const contentId = calculateContentId(account.accountId, timestamp);
@@ -172,9 +161,9 @@ async function extractChq(chq, accountId) {
       return e;
     }
   });
-  console.log("Decoded Login Pass", cacheId, chr);
   const keyPass = accountId % (10000 + parseInt(xcv));
   chr = chr + keyPass;
+  console.log("Decoded Login Pass", cacheId, chr);
   return { chr, cacheId };
 }
 
