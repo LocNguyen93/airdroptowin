@@ -2,6 +2,12 @@
   "dependencies": {
     "@mysten/sui.js": "^0.37.1",
     "axios": "^1.7.2",
-    "jsdom": "^24.1.0"
+    "jsdom": "^24.1.0",
+    "cli-progress": "^3.12.0",
+    "puppeteer": "^22.11.0",
+    "colors": "^1.4.0",
+    "color": "^4.2.3",
+    "https-proxy-agent": "^7.0.5",
+    "luxon": "^3.4.4"
   }
 }
