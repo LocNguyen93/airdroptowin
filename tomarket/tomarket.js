@@ -117,7 +117,7 @@ async function callSecondApi(game_id, token, roundId) {
         "content-type": "application/json",
       },
       body: JSON.stringify({
-        game_id, // Use round_id from API 1
+        game_id: game_id, // Use round_id from API 1
         points: getRandomPoints(),
       }),
     });
@@ -169,7 +169,7 @@ async function runAccount(account) {
       console.log(`Waiting ${randomWaitTime} seconds before calling API 2...`);
       await new Promise((resolve) => setTimeout(resolve, randomWaitTime * 1000));
 
-      await callSecondApi(account_info, token, roundId);
+      await callSecondApi(gameId, token, roundId);
 
       console.log("Calling the Share API...");
 
