@@ -5,6 +5,10 @@ const getNodeFetch = async () => (await import("node-fetch")).default;
 // Import accounts data from account.js file
 const accountData = require("./accounts.js"); // Adjust the path as per your folder structure
 
+function getRandomPoints() {
+  return Math.floor(Math.random() * (450 - 400 + 1)) + 400;
+}
+
 // Function to check if token is expired based on expiration timestamp
 function isTokenExpired(expirationTime) {
   const currentTime = Math.floor(Date.now() / 1000); // Get current time in seconds
@@ -46,22 +50,19 @@ async function callLoginApi(initData, accountId) {
   // If token is expired or not available, call the login API
   try {
     const fetch = await getNodeFetch();
-    const response = await fetch(
-      "https://api-web.tomarket.ai/tomarket-game/v1/user/login",
-      {
-        method: "POST",
-        headers: {
-          accept: "application/json, text/plain, */*",
-          "content-type": "application/json",
-        },
-        body: JSON.stringify({
-          init_data: initData,
-          invite_code: "",
-          from: "",
-          is_bot: false,
-        }),
-      }
-    );
+    const response = await fetch("https://api-web.tomarket.ai/tomarket-game/v1/user/login", {
+      method: "POST",
+      headers: {
+        accept: "application/json, text/plain, */*",
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        init_data: initData,
+        invite_code: "",
+        from: "",
+        is_bot: false,
+      }),
+    });
 
     const data = await response.json();
     console.log("Login API Response Data:", data);
@@ -70,8 +71,7 @@ async function callLoginApi(initData, accountId) {
       // Save the token and expiration time to the file
       const tokenInfo = {
         access_token: data.data.access_token,
-        expiration:
-          data.data.expires_at || Math.floor(Date.now() / 1000) + 3600, // Assuming 1-hour expiration if not provided
+        expiration: data.data.expires_at || Math.floor(Date.now() / 1000) + 3600, // Assuming 1-hour expiration if not provided
       };
       saveTokenData(accountId, tokenInfo);
       return tokenInfo.access_token;
@@ -87,18 +87,15 @@ async function callLoginApi(initData, accountId) {
 async function callFirstApi(game_id, token) {
   try {
     const fetch = await getNodeFetch();
-    const response = await fetch(
-      "https://api-web.tomarket.ai/tomarket-game/v1/game/play",
-      {
-        method: "POST",
-        headers: {
-          accept: "application/json, text/plain, */*",
-          authorization: token,
-          "content-type": "application/json",
-        },
-        body: JSON.stringify({ game_id }),
-      }
-    );
+    const response = await fetch("https://api-web.tomarket.ai/tomarket-game/v1/game/play", {
+      method: "POST",
+      headers: {
+        accept: "application/json, text/plain, */*",
+        authorization: token,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({ game_id }),
+    });
 
     const data = await response.json();
     console.log("First API Response Data:", data);
@@ -112,21 +109,18 @@ async function callFirstApi(game_id, token) {
 async function callSecondApi(game_id, token, roundId) {
   try {
     const fetch = await getNodeFetch();
-    const response = await fetch(
-      "https://api-web.tomarket.ai/tomarket-game/v1/game/claim",
-      {
-        method: "POST",
-        headers: {
-          accept: "application/json, text/plain, */*",
-          authorization: token,
-          "content-type": "application/json",
-        },
-        body: JSON.stringify({
-          game_id, // Use round_id from API 1
-          points: getRandomPoints(),
-        }),
-      }
-    );
+    const response = await fetch("https://api-web.tomarket.ai/tomarket-game/v1/game/claim", {
+      method: "POST",
+      headers: {
+        accept: "application/json, text/plain, */*",
+        authorization: token,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        game_id, // Use round_id from API 1
+        points: getRandomPoints(),
+      }),
+    });
 
     const textData = await response.text();
     console.log("Second API Response (Raw):", textData);
@@ -138,18 +132,15 @@ async function callSecondApi(game_id, token, roundId) {
 async function callShareApi(game_id, token) {
   try {
     const fetch = await getNodeFetch();
-    const response = await fetch(
-      "https://api-web.tomarket.ai/tomarket-game/v1/game/share",
-      {
-        method: "POST",
-        headers: {
-          accept: "application/json, text/plain, */*",
-          authorization: token,
-          "content-type": "application/json",
-        },
-        body: JSON.stringify({ game_id }),
-      }
-    );
+    const response = await fetch("https://api-web.tomarket.ai/tomarket-game/v1/game/share", {
+      method: "POST",
+      headers: {
+        accept: "application/json, text/plain, */*",
+        authorization: token,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({ game_id }),
+    });
 
     const shareData = await response.text();
     console.log("Share API Response (Raw):", shareData);
@@ -171,15 +162,12 @@ async function runAccount(account) {
       // Infinite loop until an error occurs
       const gameId = "59bcd12e-04e2-404c-a172-311a0084587d";
       const roundId = await callFirstApi(gameId, token);
-      if (!roundId)
-        throw new Error("------------ Invalid Game Chances ------------------");
+      if (!roundId) throw new Error("------------ Invalid Game Chances ------------------");
 
       // Wait a random amount of time before calling API 2
       const randomWaitTime = Math.floor(Math.random() * (35 - 31 + 1)) + 31;
       console.log(`Waiting ${randomWaitTime} seconds before calling API 2...`);
-      await new Promise((resolve) =>
-        setTimeout(resolve, randomWaitTime * 1000)
-      );
+      await new Promise((resolve) => setTimeout(resolve, randomWaitTime * 1000));
 
       await callSecondApi(account_info, token, roundId);
 
@@ -202,24 +190,21 @@ async function runAccount(account) {
 async function claimRewards(gameId, token) {
   try {
     const fetch = await getNodeFetch();
-    const response = await fetch(
-      "https://api-web.tomarket.ai/tomarket-game/v1/farm/claim",
-      {
-        method: "POST",
-        headers: {
-          accept: "application/json, text/plain, */*",
-          authorization: token,
-          "content-type": "application/json",
-          origin: "https://mini-app.tomarket.ai",
-          "sec-fetch-dest": "empty",
-          "sec-fetch-mode": "cors",
-          "sec-fetch-site": "same-site",
-          "user-agent":
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
-        },
-        body: JSON.stringify({ game_id: gameId }),
-      }
-    );
+    const response = await fetch("https://api-web.tomarket.ai/tomarket-game/v1/farm/claim", {
+      method: "POST",
+      headers: {
+        accept: "application/json, text/plain, */*",
+        authorization: token,
+        "content-type": "application/json",
+        origin: "https://mini-app.tomarket.ai",
+        "sec-fetch-dest": "empty",
+        "sec-fetch-mode": "cors",
+        "sec-fetch-site": "same-site",
+        "user-agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
+      },
+      body: JSON.stringify({ game_id: gameId }),
+    });
 
     const data = await response.json();
     console.log("Claim API Response Data:", data);
