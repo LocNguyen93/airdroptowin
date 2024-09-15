@@ -12,12 +12,12 @@ async function callApi(account) {
   let config = {
     method: 'post',
     maxBodyLength: Infinity,
-    url: 'https://api.hamsterkombat.io/clicker/tap',
+    url: 'https://api.hamsterkombatgame.io/clicker/tap',
     headers: { 
       'Accept-Language': 'vi-VN,vi;q=0.9,fr-FR;q=0.8,fr;q=0.7,en-US;q=0.6,en;q=0.5', 
       'Connection': 'keep-alive', 
-      'Origin': 'https://hamsterkombat.io', 
-      'Referer': 'https://hamsterkombat.io/', 
+      'Origin': 'https://hamsterkombatgame.io', 
+      'Referer': 'https://hamsterkombatgame.io/', 
       'Sec-Fetch-Dest': 'empty', 
       'Sec-Fetch-Mode': 'cors', 
       'Sec-Fetch-Site': 'same-site', 
