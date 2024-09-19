@@ -1,0 +1,42 @@
+var mdown = new MouseEvent('pointerdown', { view: null, bubbles: true, cancelable: true});
+var autoclick = function() {
+    var clickableArea = document.getElementsByClassName('clickableArea');
+    if(clickableArea) {
+        clickableArea[0]?.dispatchEvent(mdown);
+        clickableArea[0]?.click();
+    }
+}
+var autoclickBtn = function() {
+    var ele = document.querySelector('button[class*="_button_"][class*="_purple_"][class*="_textUppercase_"]');
+    if(ele) {
+        ele?.dispatchEvent(mdown);
+        ele?.click();
+    }
+	console.clear();
+}
+
+var randomAttack = function() {
+	var attacks = document.getElementsByClassName('_card_n90wq_1');
+	var randomPosition = Math.floor(Math.random() * 3) + 0;
+	if(attacks && attacks[randomPosition]) {
+		console.log("attack");
+        attacks[randomPosition]?.dispatchEvent(mdown);
+        attacks[randomPosition]?.click();
+    }
+}
+
+
+function start(){
+    if(window.auto) clearInterval(window.auto);
+    if(window.click) clearInterval(window.click);
+    if(window.randomAttack) clearInterval(window.randomAttack);
+    window.auto = setInterval(autoclick, 90);
+    window.click = setInterval(autoclickBtn, 3000);
+    window.click = setInterval(randomAttack, 2000);
+}
+
+function stop(){
+    if(window.click) clearInterval(window.click);
+    if(window.randomAttack) clearInterval(window.randomAttack);
+}
+start();
