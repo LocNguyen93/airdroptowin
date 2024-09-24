@@ -28,7 +28,7 @@ async function updateConfig(accountIndex, newInitData) {
       if (account.index === accountIndex) {
         return {
           ...account,
-          init_data: newInitData,
+          initData: newInitData,
         };
       }
       return account;
@@ -55,13 +55,14 @@ module.exports = { accounts };
 async function getDataInit(account, url) {
   const userProfile = account?.userProfile;
 
+  const chrome = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe";
   const browser = await puppeteer.launch({
+    executablePath: chrome,
     headless: false,
     userDataDir: userProfile,
   });
 
-  const page = await browser.newPage();
-
+  const [page] = await browser.pages(); // This gets the first open page or tab
   await page.goto(url);
   await page.waitForSelector(
     "#column-center > div > div > div.bubbles.scrolled-down.has-groups.has-sticky-dates > div.scrollable.scrollable-y > div.bubbles-inner.has-rights > section > div.bubbles-group.bubbles-group-last > div > div > div.reply-markup > div:nth-child(3) > button",
@@ -86,7 +87,8 @@ async function getDataInit(account, url) {
     }
   });
 
-  await new Promise((resolve) => setTimeout(resolve, 8000));
+
+  await new Promise((resolve) => setTimeout(resolve, 15000));
   await page.close();
   await browser.close();
 
@@ -135,9 +137,6 @@ async function run() {
     let isRun = true;
 
     const url = "https://web.telegram.org/k/#@seed_coin_bot";
-    const initData = await getDataInit(account, url);
-    account.initData = initData;
-
     while (isRun) {
       const response = await callApi(account);
       if (response?.statusCode === 201 || response?.statusCode === 200) {
@@ -152,7 +151,8 @@ async function run() {
         isRun = false;
       }
 
-      setTimeout(() => {}, 1000);
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
     }
   }
 
