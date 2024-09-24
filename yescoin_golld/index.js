@@ -352,11 +352,14 @@ async function collectAll(account) {
                 if (coinPoolLeftCount < 100) {
                   break;
                 }
+                
                 coinPoolLeftCount += account.coinPoolRecoverySpeed * 8;
+                console.log("_collectCoin ", _collectCoin);
+                console.log(getDateTimeLocal() + "\n");
               } else {
                 break;
               }
-              await countdown(8);
+              await countdown(5, false);
             }
           }
         } else if (account.specialBoxLeftRecoveryCount > 0) {
@@ -423,6 +426,7 @@ async function collectAll(account) {
 
 async function run(account, isFirst = true) {
   await countdown(account.index ?? 0 + 1);
+
   // Only first start project
   if (isFirst) {
     const _collectAll = await collectAll(account);
@@ -430,9 +434,11 @@ async function run(account, isFirst = true) {
       handleError("ERROR collectAll", _collectAll);
     }
 
+
     async function funcGetSpecialBoxInfo() {
       //Get random box then claim
       const _getSpecialBoxInfo = await getSpecialBoxInfo(account);
+      
       if (_getSpecialBoxInfo?.statusCode === 201 || _getSpecialBoxInfo?.statusCode === 200) {
         console.log("_getSpecialBoxInfo", _getSpecialBoxInfo);
         const autoBox = _getSpecialBoxInfo?.data?.autoBox;
@@ -462,6 +468,7 @@ async function run(account, isFirst = true) {
       await funcGetSpecialBoxInfo();
     }, 30 * 60 * 1000);
   }
+
 
   // Claim
   let timeout = 20000; //10s

@@ -1,5 +1,5 @@
-const fs = require('fs');
-const path = require('path');
+const fs = require("fs");
+const path = require("path");
 
 function getRandomInt(min, max) {
   min = Math.ceil(min);
@@ -7,12 +7,15 @@ function getRandomInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-async function countdown(seconds) {
+async function countdown(seconds, showLog = true) {
   for (let i = seconds; i >= 0; i--) {
-    console.log(i); // In ra số giây còn lại
+    //console.log(i); // In ra số giây còn lại
     await sleep(1000); // Tạm dừng 1 giây
   }
-  console.log("Countdown complete!");
+
+  if (showLog == true) {
+    //console.log("Countdown complete!");
+  }
 }
 
 function getDateTimeLocal() {
@@ -23,12 +26,10 @@ function getDateTimeLocal() {
 function handleError(key, response) {
   console.log("ERROR-----------------------------------");
   console.log(`${key} :`, JSON.stringify(response));
-  telegram.send(key, JSON.stringify(response));
+  //telegram.send(key, JSON.stringify(response));
 }
 
-
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-
 
 const colours = {
   reset: "\x1b[0m",
@@ -49,7 +50,7 @@ const colours = {
     cyan: "\x1b[36m",
     white: "\x1b[37m",
     gray: "\x1b[90m",
-    crimson: "\x1b[38m" // Scarlet
+    crimson: "\x1b[38m", // Scarlet
   },
   bg: {
     black: "\x1b[40m",
@@ -61,15 +62,15 @@ const colours = {
     cyan: "\x1b[46m",
     white: "\x1b[47m",
     gray: "\x1b[100m",
-    crimson: "\x1b[48m"
-  }
+    crimson: "\x1b[48m",
+  },
 };
 
 function writeFile(folderName, file, index, newText, dataReplace) {
   const configFilePath = path.join(__dirname, folderName, file);
-  fs.readFile(configFilePath, 'utf8', (err, data) => {
+  fs.readFile(configFilePath, "utf8", (err, data) => {
     if (err) {
-      console.error('Error reading file:', err);
+      console.error("Error reading file:", err);
       return;
     }
 
@@ -77,21 +78,53 @@ function writeFile(folderName, file, index, newText, dataReplace) {
     try {
       accountsData = eval(data); // Parse JSON-like content
     } catch (e) {
-      console.error('Error parsing JSON:', e);
+      console.error("Error parsing JSON:", e);
       return;
     }
     console.log("initData new >>>>>", newText);
     accountsData.accounts[index][dataReplace] = newText;
 
-    const updatedContent = `let accounts = ${JSON.stringify(accountsData?.accounts, null, 2)};\n module.exports = { accounts };\n`;
-    fs.writeFile(configFilePath, updatedContent, 'utf8', (err) => {
+    const updatedContent = `let accounts = ${JSON.stringify(
+      accountsData?.accounts,
+      null,
+      2,
+    )};\n module.exports = { accounts };\n`;
+    fs.writeFile(configFilePath, updatedContent, "utf8", (err) => {
       if (err) {
-        console.error('Error writing file:', err);
+        console.error("Error writing file:", err);
         return;
       }
-      console.log('File config.js has been updated.');
+      console.log("File config.js has been updated.");
     });
   });
 }
 
-module.exports = { getRandomInt, countdown, sleep, getDateTimeLocal, handleError, colours, writeFile };
+/**
+ * Common request header
+ */
+function getRequestHeader(host) {
+  return {
+    accept: "application/json, text/plain, */*",
+    "accept-language": "vi,en-US;q=0.9,en;q=0.8",
+    "content-type": "application/json",
+    origin: host,
+    priority: "u=1, i",
+    referer: host,
+    "sec-fetch-dest": "empty",
+    "sec-fetch-mode": "cors",
+    "sec-fetch-site": "same-origin",
+    "user-agent":
+      "Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1",
+  };
+}
+
+module.exports = {
+  getRequestHeader,
+  getRandomInt,
+  countdown,
+  sleep,
+  getDateTimeLocal,
+  handleError,
+  colours,
+  writeFile,
+};
