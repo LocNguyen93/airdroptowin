@@ -8,6 +8,9 @@
 
 # production
 /build
+.vs/*
+config.js
+**/config.js
 
 # misc
 .DS_Store
