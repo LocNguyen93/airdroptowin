@@ -1,3 +1,4 @@
-let accounts = [];
+let accounts = [
+  ];
 
 module.exports = { accounts };
