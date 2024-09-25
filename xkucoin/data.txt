@@ -1,0 +1,8 @@
+cookies1
+cookies2
+cookies3
+cookies4
+
+Note(khi chạy xóa bỏ note): cookies lấy trong header
+Ref:
+https://t.me/xkucoinbot/kucoinminiapp?startapp=cm91dGU9JTJGdGFwLWdhbWUlM0ZpbnZpdGVyVXNlcklkJTNENzM1NjQ2MTI0MiUyNnJjb2RlJTNE
