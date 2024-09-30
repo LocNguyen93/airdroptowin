@@ -5,7 +5,7 @@ const accounts = require("./accounts"); // Import accounts
 const getNodeFetch = async () => (await import("node-fetch")).default;
 
 function getRandomPoints() {
-  return Math.floor(Math.random() * (190 - 180 + 1)) + 180;
+  return Math.floor(Math.random() * (180 - 170 + 1)) + 170;
 }
 
 const TOKEN_EXPIRATION_BUFFER = 60 * 1000; // Buffer time before expiration in milliseconds
@@ -87,7 +87,7 @@ async function callFirstApi(token) {
     });
 
     const data = await response.json();
-    console.log("First API Response Data:", data);
+    console.log("Start API Response Data:", data);
     return data;
   } catch (error) {
     console.error("Error calling first API:", error);
@@ -124,9 +124,9 @@ async function callSecondApi(gameId, token) {
       mode: "cors",
       credentials: "include",
     });
-
+    console.log("Point Claim:", randomPoint);
     const textData = await response.text();
-    console.log("Second API Response (Raw):", textData);
+    console.log("Claim API Response (Raw):", textData);
   } catch (error) {
     console.error("Error calling second API:", error);
   }
@@ -158,30 +158,36 @@ async function run() {
 
     while (true) {
       // Loop indefinitely until an error occurs
+      let breakPoint = false;
       try {
         const data = await callFirstApi(token);
         if (!data.gameId) {
           const { message } = data;
           if (message == "not enough play passes") {
+            breakPoint = true;
             throw new Error("------------ Invalid Game Chances ------------------");
           }
         }
         if (data.gameId) {
           const randomWaitTime = Math.floor(Math.random() * (35 - 31 + 1)) + 31;
-          console.log(`Waiting ${randomWaitTime} seconds before calling API 2...`);
+          console.log(`Waiting ${randomWaitTime} seconds before calling Claim...`);
           await new Promise((resolve) => setTimeout(resolve, randomWaitTime * 1000));
           await callSecondApi(data.gameId, token); // Pass the token to the second API call
         } else {
-          console.error("Game ID is undefined. Skipping API 2 call.");
+          console.error("Game ID is undefined. Skipping API Claim call.");
         }
       } catch (error) {
         console.error(`\x1b[31mError in account ${name}:\x1b[0m`, error.message); // Red color for error
         console.log("\x1b[33mSwitching to the next account...\x1b[0m"); // Yellow color for switching message
         console.log("\n");
-        break; // Exit the loop on error and proceed to the next account
+        if (breakPoint) {
+          break; // Exit the loop on error and proceed to the next account
+        }
       }
 
-      console.log("Waiting 5 seconds before calling API 1 again...");
+      console.log("\x1b[33---------------------------------------------------------\n\x1b[0m");
+      console.log("\x1b[33mWaiting 5 seconds before calling API Start Game again......\x1b[0m");
+      console.log("\x1b[33---------------------------------------------------------\x1b[0m");
       await new Promise((resolve) => setTimeout(resolve, 5000));
     }
   }
