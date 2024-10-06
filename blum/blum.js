@@ -1,6 +1,6 @@
 const fs = require("fs");
 const path = require("path");
-const accounts = require("./accounts"); // Import accounts
+const accounts = require("./account"); // Import accounts
 
 const getNodeFetch = async () => (await import("node-fetch")).default;
 
