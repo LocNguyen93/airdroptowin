@@ -99,14 +99,14 @@ async function callFirstApi(game_id, token) {
 
     const data = await response.json();
     console.log("First API Response Data:", data);
-    return data.data.round_id; // Return round_id for the next API call
+    return data.data; // Return round_id for the next API call
   } catch (error) {
     console.error("Error calling first API:", error);
     return null; // Return null in case of error
   }
 }
 
-async function callSecondApi(game_id, token, roundId) {
+async function callSecondApi(game_id, token, data) {
   try {
     const fetch = await getNodeFetch();
     const response = await fetch("https://api-web.tomarket.ai/tomarket-game/v1/game/claim", {
@@ -119,6 +119,7 @@ async function callSecondApi(game_id, token, roundId) {
       body: JSON.stringify({
         game_id: game_id, // Use round_id from API 1
         points: getRandomPoints(),
+        stars: data.stars,
       }),
     });
 
@@ -161,15 +162,15 @@ async function runAccount(account) {
     for (let i = 0; ; i++) {
       // Infinite loop until an error occurs
       const gameId = "59bcd12e-04e2-404c-a172-311a0084587d";
-      const roundId = await callFirstApi(gameId, token);
-      if (!roundId) throw new Error("------------ Invalid Game Chances ------------------");
+      const data = await callFirstApi(gameId, token);
+      if (!data) throw new Error("------------ Invalid Game Chances ------------------");
 
       // Wait a random amount of time before calling API 2
-      const randomWaitTime = Math.floor(Math.random() * (35 - 31 + 1)) + 31;
+      const randomWaitTime = 30;
       console.log(`Waiting ${randomWaitTime} seconds before calling API 2...`);
       await new Promise((resolve) => setTimeout(resolve, randomWaitTime * 1000));
 
-      await callSecondApi(gameId, token, roundId);
+      await callSecondApi(gameId, token, data);
 
       console.log("Calling the Share API...");
 
